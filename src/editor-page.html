@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+<title>활협전 세이브 에디터 v1.0</title>
+<style>
+*{box-sizing:border-box}
+:root{
+  color-scheme:light dark;
+  --paper:#f4ecdc;
+  --paper-2:#ece1cb;
+  --card:#fbf7ee;
+  --ink:#2a241d;
+  --ink-soft:#6b604f;
+  --line:#d9cbaf;
+  --accent:#8b3a2f;
+  --accent-2:#a86a3d;
+  --jade:#3f7a5f;
+  --gold:#b58a2b;
+  --toast-bg:#2a241d;
+  --toast-fg:#f4ecdc;
+  --shadow:0 2px 12px rgba(70,48,24,.14);
+  --radius:10px;
+  --font:"맑은 고딕","Malgun Gothic",system-ui,-apple-system,sans-serif;
+}
+[data-theme="dark"]{
+  --paper:#14120f;
+  --paper-2:#1d1a15;
+  --card:#221e18;
+  --ink:#e9e0cc;
+  --ink-soft:#a89f8c;
+  --line:#3a342a;
+  --accent:#d0705c;
+  --accent-2:#c99a5f;
+  --jade:#5fa383;
+  --gold:#d8b45a;
+  --toast-bg:#e9e0cc;
+  --toast-fg:#14120f;
+  --shadow:0 2px 14px rgba(0,0,0,.5);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14120f;
+    --paper-2:#1d1a15;
+    --card:#221e18;
+    --ink:#e9e0cc;
+    --ink-soft:#a89f8c;
+    --line:#3a342a;
+    --accent:#d0705c;
+    --accent-2:#c99a5f;
+    --jade:#5fa383;
+    --gold:#d8b45a;
+    --toast-bg:#e9e0cc;
+    --toast-fg:#14120f;
+    --shadow:0 2px 14px rgba(0,0,0,.5);
+  }
+}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--font);
+  font-size:14px;
+  line-height:1.5;
+  color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(180,150,100,.12), transparent 42%),
+    radial-gradient(circle at 88% 92%, rgba(140,110,70,.12), transparent 40%);
+  background-attachment:fixed;
+}
+.hidden{display:none !important}
+
+/* 상단바 */
+.topbar{
+  position:sticky;top:0;z-index:30;
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  padding:10px 16px;
+  background:var(--card);
+  border-bottom:2px solid var(--accent);
+  box-shadow:var(--shadow);
+}
+.brand{display:flex;flex-wrap:wrap;align-items:center;gap:8px;flex:1 1 320px;min-width:0}
+.title{font-size:16px;font-weight:800;letter-spacing:.4px;color:var(--accent);white-space:nowrap}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;
+  border:1px solid var(--line);background:var(--paper-2);color:var(--ink-soft);
+  white-space:nowrap;
+}
+.badge.ok{background:rgba(63,122,95,.16);border-color:var(--jade);color:var(--jade)}
+.badge.warn{background:rgba(181,138,43,.18);border-color:var(--gold);color:var(--gold)}
+.badge.dirty{background:rgba(139,58,47,.16);border-color:var(--accent);color:var(--accent)}
+.slot-wrap{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-soft)}
+.actions{display:flex;flex-wrap:wrap;gap:6px}
+.btn{
+  font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;
+  border:1px solid var(--line);background:var(--card);color:var(--ink);
+  cursor:pointer;transition:transform .12s ease,border-color .12s ease,color .12s ease;
+}
+.btn:hover{border-color:var(--accent-2);color:var(--accent);transform:translateY(-1px)}
+.btn:active{transform:none}
+.btn:focus-visible{outline:2px solid var(--accent-2);outline-offset:2px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff8f0}
+.btn.primary:hover{color:#fff;filter:brightness(1.08)}
+.btn.ghost{background:transparent}
+
+/* 탭 */
+.tabbar{
+  display:flex;gap:4px;overflow-x:auto;
+  padding:8px 16px 0;
+  background:var(--paper-2);
+  border-bottom:1px solid var(--line);
+}
+.tab{
+  white-space:nowrap;padding:8px 14px;font:inherit;font-size:13px;
+  border:1px solid transparent;border-bottom:none;border-radius:8px 8px 0 0;
+  background:transparent;color:var(--ink-soft);cursor:pointer;
+}
+.tab:hover{color:var(--accent)}
+.tab[aria-selected="true"]{
+  background:var(--card);border-color:var(--line);color:var(--accent);
+  font-weight:700;box-shadow:inset 0 -3px 0 var(--accent);
+}
+.tab:focus-visible{outline:2px solid var(--accent-2);outline-offset:-2px}
+
+/* 패널 */
+main{padding:16px;max-width:1180px;margin:0 auto}
+.panel{display:none}
+.panel.active,.panel.is-active{display:block;animation:fadeIn .18s ease}
+.panel:focus-visible{outline:none}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* 카드 */
+.card{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px;box-shadow:var(--shadow);margin-bottom:14px;
+}
+.card h2{
+  margin:0 0 12px;font-size:14px;letter-spacing:.4px;color:var(--accent);
+  border-left:3px solid var(--accent);padding-left:8px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field>label,.field>.k{font-size:12px;font-weight:700;color:var(--ink-soft)}
+input,select,textarea{
+  font:inherit;font-size:13px;padding:6px 9px;border-radius:8px;min-width:0;
+  border:1px solid var(--line);background:var(--paper);color:var(--ink);
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent-2);outline-offset:1px}
+input[readonly]{background:var(--paper-2);color:var(--ink-soft)}
+input[type="checkbox"]{width:16px;height:16px;accent-color:var(--accent);padding:0}
+label.check{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:400;cursor:pointer}
+
+/* 칩 · 도구줄 */
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{
+  font:inherit;font-size:12px;padding:4px 11px;border-radius:999px;cursor:pointer;
+  border:1px solid var(--line);background:var(--paper-2);color:var(--ink-soft);
+}
+.chip:hover{border-color:var(--accent-2);color:var(--accent)}
+.chip.active{background:var(--accent);border-color:var(--accent);color:#fff8f0;font-weight:700}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.toolbar input[type="search"]{flex:1 1 220px;min-width:140px}
+.toolbar select{flex:1 1 220px;min-width:140px}
+.actions-row{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+
+/* 목록 · 표 */
+.list{display:flex;flex-direction:column;gap:8px;max-height:440px;overflow:auto;padding-right:4px}
+.row{
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);
+}
+.row .name{font-weight:700;flex:1 1 140px;min-width:100px;overflow-wrap:anywhere}
+.row .meta{font-size:12px;color:var(--ink-soft);white-space:nowrap}
+.row input[type="number"]{width:84px}
+.row input[type="text"]{flex:1 1 130px}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:8px;max-height:480px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{
+  position:sticky;top:0;z-index:1;background:var(--paper-2);text-align:left;
+  padding:8px 10px;font-size:12px;color:var(--ink-soft);
+  border-bottom:1px solid var(--line);white-space:nowrap;
+}
+tbody td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--paper-2)}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+
+/* 파생 카드 */
+#derived-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(132px,1fr))}
+.stat-tile{background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:10px}
+.stat-tile .k{font-size:12px;color:var(--ink-soft)}
+.stat-tile .v{font-size:18px;font-weight:800;color:var(--accent);font-variant-numeric:tabular-nums}
+
+/* 검증 */
+#validation-box{
+  display:flex;flex-direction:column;gap:6px;font-size:13px;
+  padding:10px;border-radius:8px;border:1px dashed var(--line);background:var(--paper-2);
+}
+#validation-box.ok{border-color:var(--jade);color:var(--jade)}
+#validation-box.warn{border-color:var(--gold);color:var(--gold)}
+#validation-box.error{border-color:var(--accent);color:var(--accent)}
+
+/* 토스트 */
+#toast-host{
+  position:fixed;right:16px;bottom:16px;z-index:80;
+  display:flex;flex-direction:column;gap:8px;align-items:flex-end;
+  pointer-events:none;
+}
+.toast{
+  max-width:min(360px,80vw);padding:9px 14px;border-radius:8px;font-size:13px;
+  background:var(--toast-bg);color:var(--toast-fg);
+  box-shadow:0 6px 18px rgba(0,0,0,.28);
+  animation:toastIn .2s ease;
+}
+.toast.ok{background:var(--jade);color:#fff}
+.toast.error{background:var(--accent);color:#fff}
+.toast.warn{background:var(--gold);color:#241d0c}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* 드롭 오버레이 */
+#drop-veil{
+  position:fixed;inset:0;z-index:90;display:none;
+  align-items:center;justify-content:center;text-align:center;
+  font-size:20px;font-weight:800;letter-spacing:1px;
+  color:#f7f0e0;background:rgba(20,16,11,.76);
+  border:3px dashed rgba(247,240,224,.6);
+  backdrop-filter:blur(2px);
+}
+#drop-veil.show,#drop-veil.active{display:flex}
+
+@media (max-width:720px){
+  .topbar{padding:8px 12px}
+  .title{font-size:15px}
+  .actions{width:100%}
+  .actions .btn{flex:1 1 auto}
+  main{padding:12px}
+  .card{padding:12px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="title">활협전 세이브 에디터 v1.0</span>
+    <span id="status-badge" class="badge">대기</span>
+    <span id="dirty-badge" class="badge dirty hidden">변경됨</span>
+    <span id="kind-badge" class="badge">세이브 없음</span>
+  </div>
+  <div id="slot-wrap" class="slot-wrap hidden">
+    <label for="slot-select">슬롯</label>
+    <select id="slot-select"></select>
+  </div>
+  <div class="actions">
+    <button id="btn-open-file" class="btn primary" type="button">.dat 파일 열기</button>
+    <input type="file" id="file-input" accept=".dat" hidden>
+    <button id="btn-load-demo" class="btn" type="button">데모 불러오기</button>
+    <button id="btn-load-demo-univ" class="btn" type="button">전역 도감 데모</button>
+    <button id="btn-save" class="btn primary" type="button">저장 / 내보내기</button>
+    <button id="btn-save-as" class="btn" type="button">다른 이름으로</button>
+    <button id="btn-theme" class="btn ghost" type="button">테마 전환</button>
+  </div>
+</header>
+
+<nav class="tabbar" role="tablist" aria-label="편집 탭">
+  <button id="tab-summary" class="tab" role="tab" aria-selected="true" aria-controls="panel-summary" tabindex="0" type="button">요약 · 시간</button>
+  <button id="tab-stats" class="tab" role="tab" aria-selected="false" aria-controls="panel-stats" tabindex="-1" type="button">능력치 · 문파</button>
+  <button id="tab-relationships" class="tab" role="tab" aria-selected="false" aria-controls="panel-relationships" tabindex="-1" type="button">인물 · 호감도</button>
+  <button id="tab-books" class="tab" role="tab" aria-selected="false" aria-controls="panel-books" tabindex="-1" type="button">비급 · 특기 · 기술</button>
+  <button id="tab-inventory" class="tab" role="tab" aria-selected="false" aria-controls="panel-inventory" tabindex="-1" type="button">잡물 · 귀중품 · 개발</button>
+  <button id="tab-flags" class="tab" role="tab" aria-selected="false" aria-controls="panel-flags" tabindex="-1" type="button">세력 · 이벤트</button>
+  <button id="tab-library" class="tab" role="tab" aria-selected="false" aria-controls="panel-library" tabindex="-1" type="button">전역 도감 · 전설</button>
+  <button id="tab-diff" class="tab" role="tab" aria-selected="false" aria-controls="panel-diff" tabindex="-1" type="button">변경 내역 · 검증</button>
+</nav>
+
+<main>
+  <!-- 요약 · 시간 -->
+  <section id="panel-summary" class="panel active" role="tabpanel" aria-labelledby="tab-summary" tabindex="0">
+    <div class="card">
+      <h2>빠른 프리셋</h2>
+      <div id="preset-chips" class="chips">
+        <button class="chip" type="button" data-preset="rich_start">풍요로운 시작</button>
+        <button class="chip" type="button" data-preset="hero_all_100">강호 영웅</button>
+        <button class="chip" type="button" data-preset="martial_master">무학 대가</button>
+        <button class="chip" type="button" data-preset="tangmen_prosperity">당문 번영</button>
+        <button class="chip" type="button" data-preset="full_favorability">만인 호감</button>
+        <button class="chip" type="button" data-preset="unlock_all_library">도감 전체 해금</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>기본 정보 · 시간</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="f-version">세이브 판본</label>
+          <input id="f-version" type="text" readonly>
+        </div>
+        <div class="field">
+          <label for="f-year">연도</label>
+          <input id="f-year" type="number" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="f-month">월</label>
+          <input id="f-month" type="number" min="1" max="12" step="1">
+        </div>
+        <div class="field">
+          <label for="f-stage">순</label>
+          <select id="f-stage">
+            <option value="1">상순</option>
+            <option value="2">중순</option>
+            <option value="3">하순</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-env">환경</label>
+          <select id="f-env">
+            <option value="1">낮</option>
+            <option value="2">밤</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="f-scene">장면</label>
+          <input id="f-scene" type="text" readonly>
+        </div>
+        <div class="field">
+          <span class="k">체험판 여부</span>
+          <label class="check" for="f-is-demo"><input id="f-is-demo" type="checkbox"> 체험판 세이브</label>
+        </div>
+        <div class="field">
+          <span class="k">계승 진행</span>
+          <label class="check" for="f-ngp"><input id="f-ngp" type="checkbox"> 계승 진행 중</label>
+        </div>
+      </div>
+      <div class="actions-row">
+        <button id="btn-apply-summary" class="btn primary" type="button">기본 정보 적용</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>파생 전투 · 수련 미리보기</h2>
+      <div id="derived-grid"></div>
+    </div>
+  </section>
+
+  <!-- 능력치 · 문파 -->
+  <section id="panel-stats" class="panel" role="tabpanel" aria-labelledby="tab-stats" tabindex="0">
+    <div class="card">
+      <h2>능력치 · 문파</h2>
+      <div class="toolbar">
+        <input id="stat-search" type="search" placeholder="능력치 이름 검색">
+        <div class="chips" id="stat-filters">
+          <button class="chip active" type="button" data-filter="all">전체</button>
+          <button class="chip" type="button" data-filter="base">기초 · 성정</button>
+          <button class="chip" type="button" data-filter="martial">무학 · 학문</button>
+          <button class="chip" type="button" data-filter="sect">문파 · 전투</button>
+        </div>
+      </div>
+      <div id="stats-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- 인물 · 호감도 -->
+  <section id="panel-relationships" class="panel" role="tabpanel" aria-labelledby="tab-relationships" tabindex="0">
+    <div class="card">
+      <h2>인물 · 호감도</h2>
+      <div class="toolbar">
+        <input id="rel-search" type="search" placeholder="인물 이름 검색">
+      </div>
+      <div id="rels-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- 비급 · 특기 · 기술 -->
+  <section id="panel-books" class="panel" role="tabpanel" aria-labelledby="tab-books" tabindex="0">
+    <div class="card">
+      <h2>비급</h2>
+      <div class="toolbar">
+        <select id="add-book-select"></select>
+        <button id="btn-add-book" class="btn primary" type="button">비급 추가</button>
+      </div>
+      <div id="books-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>특기</h2>
+      <div class="toolbar">
+        <select id="add-talent-select"></select>
+        <button id="btn-add-talent" class="btn primary" type="button">특기 추가</button>
+      </div>
+      <div id="talents-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>전역 전투 기술 · 장착</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="eq-skill-1">장착 슬롯 1</label>
+          <select id="eq-skill-1"></select>
+        </div>
+        <div class="field">
+          <label for="eq-skill-2">장착 슬롯 2</label>
+          <select id="eq-skill-2"></select>
+        </div>
+        <div class="field">
+          <label for="eq-skill-3">장착 슬롯 3</label>
+          <select id="eq-skill-3"></select>
+        </div>
+        <div class="field">
+          <label for="eq-skill-4">장착 슬롯 4</label>
+          <select id="eq-skill-4"></select>
+        </div>
+      </div>
+      <div id="skills-list" class="list" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <!-- 잡물 · 귀중품 · 개발 -->
+  <section id="panel-inventory" class="panel" role="tabpanel" aria-labelledby="tab-inventory" tabindex="0">
+    <div class="card">
+      <h2>잡물</h2>
+      <div class="toolbar">
+        <select id="add-misc-select"></select>
+        <button id="btn-add-misc" class="btn primary" type="button">잡물 추가</button>
+      </div>
+      <div id="miscs-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>귀중품</h2>
+      <div class="toolbar">
+        <select id="add-special-select"></select>
+        <button id="btn-add-special" class="btn primary" type="button">귀중품 추가</button>
+      </div>
+      <div id="specials-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>독술 · 연단 개발</h2>
+      <div id="poison-upgrades-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>단조 · 암기 개발</h2>
+      <div id="weapon-upgrades-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- 세력 · 이벤트 -->
+  <section id="panel-flags" class="panel" role="tabpanel" aria-labelledby="tab-flags" tabindex="0">
+    <div class="card">
+      <h2>적 세력</h2>
+      <div id="enemy-teams-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>이벤트 플래그</h2>
+      <div class="toolbar">
+        <input id="flag-search" type="search" placeholder="이벤트 플래그 검색">
+      </div>
+      <div id="flags-list" class="list"></div>
+    </div>
+  </section>
+
+  <!-- 전역 도감 · 전설 -->
+  <section id="panel-library" class="panel" role="tabpanel" aria-labelledby="tab-library" tabindex="0">
+    <div class="card">
+      <h2>전역 도감</h2>
+      <div class="grid">
+        <div class="stat-tile">
+          <div class="k">사망</div>
+          <div class="v" data-lib-cat="death">0 / 0</div>
+        </div>
+        <div class="stat-tile">
+          <div class="k">엔딩</div>
+          <div class="v" data-lib-cat="ending">0 / 0</div>
+        </div>
+        <div class="stat-tile">
+          <div class="k">업적</div>
+          <div class="v" data-lib-cat="achievement">0 / 0</div>
+        </div>
+        <div class="stat-tile">
+          <div class="k">결연 CG</div>
+          <div class="v" data-lib-cat="cg">0 / 0</div>
+        </div>
+      </div>
+      <div class="toolbar" style="margin-top:12px">
+        <input id="lib-search" type="search" placeholder="도감 항목 검색">
+        <button id="btn-unlock-all-lib" class="btn" type="button">도감 전체 해금</button>
+      </div>
+      <div id="library-list" class="list"></div>
+    </div>
+
+    <div class="card">
+      <h2>결말 · 전설</h2>
+      <div class="grid">
+        <div class="field">
+          <label for="legend-end-key">결말 키</label>
+          <input id="legend-end-key" type="text">
+        </div>
+        <div class="field">
+          <label for="legend-story-count">스토리 진행 수</label>
+          <input id="legend-story-count" type="number" min="0" step="1">
+        </div>
+      </div>
+      <div class="actions-row">
+        <button id="btn-apply-legend" class="btn primary" type="button">결말 정보 적용</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 변경 내역 · 검증 -->
+  <section id="panel-diff" class="panel" role="tabpanel" aria-labelledby="tab-diff" tabindex="0">
+    <div class="card">
+      <h2>검증 결과</h2>
+      <div id="validation-box">검증 대기</div>
+    </div>
+
+    <div class="card">
+      <h2>변경 내역 <span id="diff-count" class="badge">0</span></h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>경로</th>
+              <th>이전 값</th>
+              <th>새 값</th>
+            </tr>
+          </thead>
+          <tbody id="diff-list"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<div id="toast-host" aria-live="polite" aria-atomic="false"></div>
+<div id="drop-veil">여기에 .dat 파일을 놓으세요</div>
+
+<script src="nrbf-codec.js"></script>
+<script src="catalog-data.js"></script>
+<script src="editor-core.js"></script>
+<script src="editor-ui.js"></script>
+</body>
+</html>
