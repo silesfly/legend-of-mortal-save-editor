@@ -35,16 +35,16 @@ namespace LegendOfMortalSaveEditor
 
             string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string baseDir = Path.Combine(localAppData, "LegendOfMortalSaveEditor");
-            string runtimeDir = Path.Combine(baseDir, "runtime-1.0.0");
-            string htmlDir = Path.Combine(baseDir, "html-1.0.0");
-            string htmlPath = Path.Combine(htmlDir, "LegendOfMortalSaveEditor-v1.0.html");
+            string runtimeDir = Path.Combine(baseDir, "runtime-1.0.1");
+            string htmlDir = Path.Combine(baseDir, "html-1.0.1");
+            string htmlPath = Path.Combine(htmlDir, "LegendOfMortalSaveEditor-v1.0.1.html");
 
             try
             {
                 EnsureDir(runtimeDir);
                 EnsureDir(htmlDir);
                 ExtractResource("WebView2Loader.dll", Path.Combine(runtimeDir, "WebView2Loader.dll"));
-                ExtractResource("LegendOfMortalSaveEditor-v1.0.html", htmlPath);
+                ExtractResource("LegendOfMortalSaveEditor-v1.0.1.html", htmlPath);
             }
             catch (Exception ex)
             {
@@ -144,7 +144,7 @@ namespace LegendOfMortalSaveEditor
             _baseDir = baseDir;
             _json.MaxJsonLength = int.MaxValue;
 
-            Text = "활협전 세이브 에디터 v1.0";
+            Text = "활협전 세이브 에디터 v1.0.1";
             Width = 1280;
             Height = 840;
             StartPosition = FormStartPosition.CenterScreen;
@@ -163,7 +163,7 @@ namespace LegendOfMortalSaveEditor
                 await InitializeWebViewCoreAsync(_webView, _baseDir, _htmlDir);
                 _webView.CoreWebView2.WebMessageReceived += HandleWebMessage;
                 _webView.NavigationCompleted += OnNavCompleted;
-                _webView.Source = new Uri("https://lom-editor.local/LegendOfMortalSaveEditor-v1.0.html");
+                _webView.Source = new Uri("https://lom-editor.local/LegendOfMortalSaveEditor-v1.0.1.html");
             }
             catch (Exception ex)
             {
@@ -179,7 +179,7 @@ namespace LegendOfMortalSaveEditor
 
         public static async Task InitializeWebViewCoreAsync(WebView2 webView, string localAppDataBase, string htmlDir)
         {
-            string userDataDir = Path.Combine(localAppDataBase, "webview2-1.0.0");
+            string userDataDir = Path.Combine(localAppDataBase, "webview2-1.0.1");
             if (!Directory.Exists(userDataDir)) Directory.CreateDirectory(userDataDir);
 
             CoreWebView2Environment env = await CoreWebView2Environment.CreateAsync(null, userDataDir);
@@ -523,7 +523,7 @@ namespace LegendOfMortalSaveEditor
             await SaveEditorForm.InitializeWebViewCoreAsync(_webView, baseDir, _htmlDir);
             WebView2Version = _webView.CoreWebView2.Environment.BrowserVersionString;
 
-            _webView.Source = new Uri("https://lom-editor.local/LegendOfMortalSaveEditor-v1.0.html");
+            _webView.Source = new Uri("https://lom-editor.local/LegendOfMortalSaveEditor-v1.0.1.html");
             bool navOk = await _navTcs.Task;
             if (!navOk) throw new InvalidOperationException("Navigation failed");
             await Task.Delay(400);

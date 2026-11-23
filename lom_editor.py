@@ -1346,7 +1346,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         self._send(404, {"error": "존재하지 않는 경로입니다."})
 
     def _serve_index(self) -> None:
-        html_path = ROOT_DIR / "dist" / "LegendOfMortalSaveEditor-v1.0.html"
+        html_path = ROOT_DIR / "dist" / "LegendOfMortalSaveEditor-v1.0.1.html"
         if not html_path.is_file():
             html_path = ROOT_DIR / "src" / "editor-page.html"
         content = html_path.read_text(encoding="utf-8") if html_path.is_file() else "<html><head></head><body><h1>HTML 없음</h1></body></html>"

@@ -1,11 +1,11 @@
-# 활협전 세이브 에디터 v1.0 (`LegendOfMortalSaveEditor`)
+# 활협전 세이브 에디터 v1.0.1 (`LegendOfMortalSaveEditor`)
 
-원시공작소(Obb Studio)의 **활협전(`Legend of Mortal`, Steam AppID `1859910`)** 전용 오프라인 3-Surface 세이브 편집기입니다.
+원시공작소(Obb Studio)의 **활협전(`Legend of Mortal`, Steam AppID `1859910`, `v1.0.6001.2` 호환)** 전용 오프라인 3-Surface 세이브 편집기입니다.
 
 ## 주요 실행 방식 (3종 표면)
 
-- **Windows x64 단독 실행 파일**: `LegendOfMortalSaveEditor-v1.0.exe` (`.NET Framework 4.8` + `WebView2` 내장, `%USERPROFILE%\AppData\LocalLow\Obb Studio\Mortal\` 및 Steam 경로 자동 탐색)
-- **단독 오프라인 HTML**: `dist/LegendOfMortalSaveEditor-v1.0.html` (CSP `default-src 'none'; connect-src 'none'` 적용, 외부 네트워크 요청 0건, 밝은/어두운 테마 전환)
+- **Windows x64 단독 실행 파일**: `LegendOfMortalSaveEditor-v1.0.1.exe` (`.NET Framework 4.8` + `WebView2` 내장, `%USERPROFILE%\AppData\LocalLow\Obb Studio\Mortal\` 및 Steam 경로 자동 탐색)
+- **단독 오프라인 HTML**: `dist/LegendOfMortalSaveEditor-v1.0.1.html` (CSP `default-src 'none'; connect-src 'none'` 적용, 외부 네트워크 요청 0건, 밝은/어두운 테마 전환)
 - **Python 3 CLI 및 로컬 웹 서버**: `lom_editor.py` (`demo`, `discover`, `inspect`, `validate`, `presets`, `edit`, `serve`)
 
 ## 지원 세이브 형식 및 구조 (REA 검증 기반)

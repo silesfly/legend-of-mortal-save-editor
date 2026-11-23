@@ -20,7 +20,7 @@ function resolvePlaywright() {
 const { chromium } = resolvePlaywright();
 
 const ROOT = path.resolve(__dirname, '..');
-const DIST = path.join(ROOT, 'dist', 'LegendOfMortalSaveEditor-v1.0.html');
+const DIST = path.join(ROOT, 'dist', 'LegendOfMortalSaveEditor-v1.0.1.html');
 const CLI = path.join(ROOT, 'lom_editor.py');
 
 const HANZI = /[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]/;

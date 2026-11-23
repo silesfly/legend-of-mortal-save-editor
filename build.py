@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bundler for 활협전 세이브 에디터 v1.0 (zero-dependency)."""
+"""Bundler for 활협전 세이브 에디터 v1.0.1 (zero-dependency)."""
 import argparse
 import os
 import re
@@ -9,7 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SRC_HTML = ROOT / "src" / "editor-page.html"
 SRC_DIR = ROOT / "src"
-DIST_HTML = ROOT / "dist" / "LegendOfMortalSaveEditor-v1.0.html"
+DIST_HTML = ROOT / "dist" / "LegendOfMortalSaveEditor-v1.0.1.html"
 JS_FILES = ["nrbf-codec.js", "catalog-data.js", "editor-core.js", "editor-ui.js"]
 
 HANZI_RE = re.compile(r"[\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF]")

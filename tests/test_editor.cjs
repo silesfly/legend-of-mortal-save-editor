@@ -122,6 +122,18 @@ test('Catalog: sizes and language cleanliness', () => {
     'Catalog contains Hanzi characters (expected 0): ' + hazhiMatches.slice(0, 8).join(', '));
   assert.equal(kanaMatches.length, 0,
     'Catalog contains Kana characters (expected 0): '  + kanaMatches.slice(0, 8).join(', '));
+  assert.equal(blob.includes('\u00ad'), false,
+    'Catalog must not contain soft hyphen (U+00AD)');
+
+  const lib20014 = C.library.find(x => String(x.id) === '20014');
+  assert.equal(lib20014 && lib20014.name, '자야기군서',
+    'v1.0.6001.2 Library #20014 name must be 자야기군서');
+  const sp2002 = C.specialItems.find(x => String(x.id) === '2002');
+  assert.equal(sp2002 && sp2002.name, '공동 마갈락',
+    'v1.0.6001.2 SpecialItem #2002 name must be 공동 마갈락');
+  const sp1008 = C.specialItems.find(x => String(x.id) === '1008');
+  assert.ok(sp1008 && String(sp1008.desc || '').includes('낡은 종이 한 장'),
+    'v1.0.6001.2 SpecialItem #1008 desc must mention 낡은 종이 한 장');
 });
 
 /* ------------------------------------------------------------------ */
